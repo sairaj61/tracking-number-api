@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 // @Component // Remove this annotation
-public class SnowflakeIdGenerator {
+public class TrackingIdGenerator {
 
     private static final int TIMESTAMP_BITS = 41;
     private static final int WORKER_ID_BITS = 10;
@@ -38,7 +38,7 @@ public class SnowflakeIdGenerator {
      * This is the constructor Spring should be using.
      * @param workerId Injected worker ID from application properties (e.g., snowflake.worker.id).
      */
-    public SnowflakeIdGenerator(@Value("${snowflake.worker.id}") long workerId) {
+    public TrackingIdGenerator(@Value("${snowflake.worker.id}") long workerId) {
         this(workerId, CUSTOM_EPOCH_MS);
     }
 
@@ -48,7 +48,7 @@ public class SnowflakeIdGenerator {
      * @param workerId A unique ID for this worker/process.
      * @param epochMs  Custom epoch in milliseconds.
      */
-    public SnowflakeIdGenerator(long workerId, long epochMs) {
+    public TrackingIdGenerator(long workerId, long epochMs) {
         if (workerId < 0 || workerId > MAX_WORKER_ID) {
             throw new IllegalArgumentException(String.format("Worker ID must be between 0 and %d. Configured: %d", MAX_WORKER_ID, workerId));
         }

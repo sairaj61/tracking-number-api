@@ -14,12 +14,12 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class TrackingNumberService {
 
-    private final SnowflakeIdGenerator idGenerator;
+    private final TrackingIdGenerator idGenerator;
     private final TrackingNumberRecordRepository trackingNumberRepository;
 
     private static final int MAX_GENERATION_RETRIES = 5; // Max retries for generating a unique ID if a collision occurs
 
-    public TrackingNumberService(SnowflakeIdGenerator idGenerator, TrackingNumberRecordRepository trackingNumberRepository) {
+    public TrackingNumberService(TrackingIdGenerator idGenerator, TrackingNumberRecordRepository trackingNumberRepository) {
         this.idGenerator = idGenerator;
         this.trackingNumberRepository = trackingNumberRepository;
     }
