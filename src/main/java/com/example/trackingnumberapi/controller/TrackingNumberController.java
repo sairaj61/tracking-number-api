@@ -9,12 +9,18 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -24,6 +30,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1")
 @Validated
 @Tag(name = "Tracking Number API", description = "Endpoints for generating unique tracking numbers")
+@Slf4j
 public class TrackingNumberController {
 
     private final TrackingNumberService trackingNumberService;
@@ -65,6 +72,8 @@ public class TrackingNumberController {
             @Parameter(description = "Customer's name in slug-case/kebab-case (e.g., 'redbox-logistics')", required = true)
             @RequestParam String customer_slug
     ) {
+        log.info("Received request to generate tracking number for customer: {}", customer_id);
+
         TrackingNumberRequestParams params = new TrackingNumberRequestParams();
         params.setOriginCountryId(origin_country_id);
         params.setDestinationCountryId(destination_country_id);
@@ -74,7 +83,27 @@ public class TrackingNumberController {
         params.setCustomerName(customer_name);
         params.setCustomerSlug(customer_slug);
 
-        TrackingNumberResponse response = trackingNumberService.generateAndSaveTrackingNumber(params);
-        return ResponseEntity.ok(response);
+        try {
+            TrackingNumberResponse response = trackingNumberService.generateAndSaveTrackingNumber(params);
+            log.info("Successfully generated tracking number: {} for customer: {}", response.getTrackingNumber(), customer_id);
+            return ResponseEntity.ok(response);
+        } catch (ResponseStatusException e) {
+            log.warn("API Error: {} - {}", e.getMessage(), e.getReason());
+            throw e; // Re-throw to be handled by the @ExceptionHandler
+        } catch (Exception e) {
+            log.error("An unexpected error occurred while generating tracking number for customer {}: {}", customer_id, e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<String> handleResponseStatusException(ResponseStatusException ex) {
+        return ResponseEntity.status(ex.getStatusCode()).body(ex.getReason());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenericException(Exception ex) {
+        log.error("An unhandled exception occurred: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An internal server error occurred.");
     }
 }
