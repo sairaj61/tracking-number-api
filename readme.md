@@ -4,10 +4,10 @@ This project implements a RESTful API using Spring Boot to generate unique track
 
 ## Features
 
--   **Unique Tracking Number Generation**: Uses a Snowflake-like ID generator with Base36 encoding to produce unique, 1-16 character alphanumeric tracking numbers (`^[A-Z0-9]{1,16}$`).
+-   **Unique Tracking Number Generation**: Uses a ID generator with Base36 encoding to produce unique, 1-16 character alphanumeric tracking numbers (`^[A-Z0-9]{1,16}$`).
 -   **Database Persistence**: Stores generated tracking numbers and associated request parameters in a database (H2 in-memory by default). Uniqueness is enforced at the database level.
 -   **Scalability**:
-    -   The `SnowflakeIdGenerator` requires a unique `worker.id` per application instance to ensure global uniqueness when scaled horizontally.
+    -   The `TrackingIdGenerator` requires a unique `worker.id` per application instance to ensure global uniqueness when scaled horizontally.
     -   The application is stateless, suitable for running multiple instances behind a load balancer.
 -   **API Endpoint**: `GET /api/v1/next-tracking-number`
 -   **Input Validation**: Validates query parameters.
@@ -21,11 +21,11 @@ This project implements a RESTful API using Spring Boot to generate unique track
 ## Project Structure
 
 -   `com.example.trackingnumberapi.controller`: REST controller for API endpoints.
--   `com.example.trackingnumberapi.service`: Contains the core business logic, including `SnowflakeIdGenerator` and `TrackingNumberService`.
+-   `com.example.trackingnumberapi.service`: Contains the core business logic, including `TrackingIdGenerator` and `TrackingNumberService`.
 -   `com.example.trackingnumberapi.model.entity`: JPA entities.
 -   `com.example.trackingnumberapi.model.repository`: Spring Data JPA repositories.
 -   `com.example.trackingnumberapi.model.dto`: Data Transfer Objects for API requests/responses.
--   `com.example.trackingnumberapi.config`: Configuration classes, e.g., for explicitly defining beans like `SnowflakeIdGenerator`.
+-   `com.example.trackingnumberapi.config`: Configuration classes, e.g., for explicitly defining beans like `TrackingIdGenerator`.
 -   `resources/application.properties`: Application configuration.
 
 ## Setup and Running
@@ -36,19 +36,19 @@ This project implements a RESTful API using Spring Boot to generate unique track
     cd tracking-number-api
     ```
 
-2.  **Configure `snowflake.worker.id` (Crucial for multiple instances):**
+2.  **Configure `tracking.worker.id` (Crucial for multiple instances):**
     Open `src/main/resources/application.properties`.
-    The property `snowflake.worker.id` **must be unique** for each instance of the application if you plan to run more than one for horizontal scaling.
-    For local development with a single instance, the default `0` is fine. `snowflake.worker.id=1` is configured by default.
+    The property `tracking.worker.id` **must be unique** for each instance of the application if you plan to run more than one for horizontal scaling.
+    For local development with a single instance, the default `0` is fine. `tracking.worker.id=1` is configured by default.
     In a production environment (e.g., Docker, Kubernetes), this should be set via an environment variable:
     ```properties
     # Example for application.properties to read from environment variable
-    # snowflake.worker.id=${SNOWFLAKE_WORKER_ID:0}
+    # tracking.worker.id=${TRACKING_WORKER_ID:0}
     ```
-    And then run your application instance with `SNOWFLAKE_WORKER_ID` set:
+    And then run your application instance with `TRACKING_WORKER_ID` set:
     ```bash
-    export SNOWFLAKE_WORKER_ID=1 # For instance 1
-    # export SNOWFLAKE_WORKER_ID=2 # For instance 2, etc.
+    export TRACKING_WORKER_ID=1 # For instance 1
+    # export TRACKING_WORKER_ID=2 # For instance 2, etc.
     mvn spring-boot:run
     ```
 
@@ -115,12 +115,12 @@ Once the application is running:
 -   Package the application as a JAR: `mvn clean package`.
 -   The JAR file will be in the `target/` directory (e.g., `tracking-number-api-0.0.1-SNAPSHOT.jar`).
 -   Deploy this JAR to any platform that supports Java applications (e.g., AWS Elastic Beanstalk, Google App Engine, Heroku, Docker container).
--   **Remember to configure the `snowflake.worker.id` (or `SNOWFLAKE_WORKER_ID` environment variable) uniquely for each deployed instance**.
+-   **Remember to configure the `tracking.worker.id` (or `TRACKING_WORKER_ID` environment variable) uniquely for each deployed instance**.
 
 ## Considerations for Production
 
 -   **Database**: Switch from H2 to a production-grade database.
--   **Worker ID Management**: Implement a robust strategy for assigning unique `snowflake.worker.id` values to each application instance. This could involve environment variables set by an orchestrator (like Kubernetes), a service discovery mechanism, or a startup script that claims an ID from a central counter.
+-   **Worker ID Management**: Implement a robust strategy for assigning unique `tracking.worker.id` values to each application instance. This could involve environment variables set by an orchestrator (like Kubernetes), a service discovery mechanism, or a startup script that claims an ID from a central counter.
 -   **Security**: Implement proper authentication and authorization if the API is exposed publicly.
 -   **Logging and Monitoring**: Configure structured logging and integrate with monitoring tools.
 -   **Error Handling**: Enhance global error handling and provide more specific error responses.
