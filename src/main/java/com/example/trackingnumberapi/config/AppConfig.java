@@ -15,8 +15,8 @@ public class AppConfig {
      * This provides an explicit way for Spring to manage and instantiate this bean.
      */
     @Bean // Marks the method's return value as a Spring-managed bean
-    public TrackingIdGenerator snowflakeIdGenerator(@Value("${tracking.worker.id}") long workerId) {
-        // Spring will call this method to create the SnowflakeIdGenerator instance,
+    public TrackingIdGenerator trackingIdGenerator(@Value("${tracking.worker.id}") long workerId) {
+        // Spring will call this method to create the IdGenerator instance,
         // providing the workerId value from application.properties.
         return new TrackingIdGenerator(workerId);
     }

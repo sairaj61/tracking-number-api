@@ -30,9 +30,9 @@ public class TrackingNumberService {
         int attempts = 0;
 
         while (attempts < MAX_GENERATION_RETRIES) {
-            generatedTrackingNumber = idGenerator.nextIdBase36(); // Uses the SnowflakeIdGenerator
+            generatedTrackingNumber = idGenerator.nextIdBase36(); // Uses the TrackingIdGenerator
 
-            // Check against regex (Snowflake Base36 should always match if length is okay)
+            // Check against regex ( Base36 should always match if length is okay)
             if (!generatedTrackingNumber.matches("^[A-Z0-9]{1,16}$")) {
                 System.err.println("Generated ID " + generatedTrackingNumber + " does not match regex. Retrying...");
                 attempts++;
