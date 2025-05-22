@@ -1,14 +1,13 @@
-// src/main/java/com/example/trackingnumberapi/service/SnowflakeIdGenerator.java
+
 package com.example.trackingnumberapi.service;
 
 import org.springframework.beans.factory.annotation.Value;
-// import org.springframework.stereotype.Component; // You can remove this line
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-// @Component // Remove this annotation
+
 public class TrackingIdGenerator {
 
     private static final int TIMESTAMP_BITS = 41;
@@ -33,12 +32,13 @@ public class TrackingIdGenerator {
     private final Object lock = new Object();
 
     /**
-     * Constructor for SnowflakeIdGenerator.
+     * Constructor for TrackingIdGenerator.
      * Worker ID is injected from application properties.
      * This is the constructor Spring should be using.
-     * @param workerId Injected worker ID from application properties (e.g., snowflake.worker.id).
+     *
+     * @param workerId Injected worker ID from application properties (e.g., tracking.worker.id).
      */
-    public TrackingIdGenerator(@Value("${snowflake.worker.id}") long workerId) {
+    public TrackingIdGenerator(@Value("${tracking.worker.id}") long workerId) {
         this(workerId, CUSTOM_EPOCH_MS);
     }
 
@@ -54,7 +54,7 @@ public class TrackingIdGenerator {
         }
         this.workerId = workerId;
         this.epochMs = epochMs;
-        System.out.println("SnowflakeIdGenerator initialized with Worker ID: " + this.workerId + " and Epoch (ms): " + this.epochMs);
+        System.out.println("trackingIdGenerator initialized with Worker ID: " + this.workerId + " and Epoch (ms): " + this.epochMs);
     }
 
     private long currentTimeMs() {
