@@ -15,7 +15,6 @@ public class TrackingNumberResponse {
     @NotNull
     private String createdAt; // RFC 3339 format timestamp of when the tracking number was generated
 
-    // Optional: Include other details if needed
     private String message;
 
     public TrackingNumberResponse(String trackingNumber, OffsetDateTime createdAt) {
