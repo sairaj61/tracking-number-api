@@ -4,8 +4,7 @@ import com.example.trackingnumberapi.model.dto.TrackingNumberRequestParams;
 import com.example.trackingnumberapi.model.dto.TrackingNumberResponse;
 import com.example.trackingnumberapi.model.entity.TrackingNumberRecord;
 import com.example.trackingnumberapi.model.repository.TrackingNumberRecordRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -13,9 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
+@Slf4j
 public class TrackingNumberService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TrackingNumberService.class);
 
     private final TrackingIdGenerator idGenerator;
     private final TrackingNumberRecordRepository trackingNumberRepository;
@@ -38,7 +37,7 @@ public class TrackingNumberService {
 
                 // Check against regex (Base36 should always match if length is okay)
                 if (!generatedTrackingNumber.matches("^[A-Z0-9]{1,16}$")) {
-                    logger.warn("Generated ID {} does not match regex. Retrying... Attempt: {}", generatedTrackingNumber, attempts + 1);
+                    log.warn("Generated ID {} does not match regex. Retrying... Attempt: {}", generatedTrackingNumber, attempts + 1);
                     attempts++;
                     continue;
                 }
@@ -56,26 +55,26 @@ public class TrackingNumberService {
 
                 // The database's unique constraint is the final arbiter of uniqueness
                 savedRecord = trackingNumberRepository.save(newRecord); // Interacts with the repository
-                logger.info("Successfully saved tracking number: {}", generatedTrackingNumber);
+                log.info("Successfully saved tracking number: {}", generatedTrackingNumber);
                 break; // If save is successful, break the loop
 
             } catch (DataIntegrityViolationException e) {
-                logger.warn("Collision detected for tracking number: {}. Retrying... Attempt: {}. Error: {}", generatedTrackingNumber, (attempts + 1), e.getMessage());
+                log.warn("Collision detected for tracking number: {}. Retrying... Attempt: {}. Error: {}", generatedTrackingNumber, (attempts + 1), e.getMessage());
             } catch (DataAccessException e) {
-                logger.error("Database access error while generating/saving tracking number for customer {}: {}", params.getCustomerId(), e.getMessage(), e);
+                log.error("Database access error while generating/saving tracking number for customer {}: {}", params.getCustomerId(), e.getMessage(), e);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database error: Failed to save tracking number.");
             } catch (IllegalStateException e) {
-                logger.error("ID generation error: {}", e.getMessage());
+                log.error("ID generation error: {}", e.getMessage());
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate unique ID due to clock issues or generator configuration.");
             } catch (Exception e) {
-                logger.error("An unexpected error occurred during tracking number generation/saving for customer {}: {}", params.getCustomerId(), e.getMessage(), e);
+                log.error("An unexpected error occurred during tracking number generation/saving for customer {}: {}", params.getCustomerId(), e.getMessage(), e);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
             }
             attempts++;
         }
 
         if (savedRecord == null || savedRecord.getGeneratedAt() == null) {
-            logger.error("Failed to generate and save a unique tracking number after {} attempts for customer {}", MAX_GENERATION_RETRIES, params.getCustomerId());
+            log.error("Failed to generate and save a unique tracking number after {} attempts for customer {}", MAX_GENERATION_RETRIES, params.getCustomerId());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate a unique tracking number after multiple attempts. Please try again later.");
         }
 
