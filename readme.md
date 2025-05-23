@@ -117,6 +117,41 @@ Once the application is running:
 -   Deploy this JAR to any platform that supports Java applications (e.g., AWS Elastic Beanstalk, Google App Engine, Heroku, Docker container).
 -   **Remember to configure the `tracking.worker.id` (or `TRACKING_WORKER_ID` environment variable) uniquely for each deployed instance**.
 
+**Build Docker Image on EC2:**
+```bash
+docker build -t tracking-number-api .
+```
+* `docker build`: The command to build a Docker image.
+* `-t tracking-number-api`: Tags the resulting image with the name `tracking-number-api`.
+* `.`: Specifies that the build context is the current directory.
+
+4.  **Run Docker Container in Detached Mode:**
+    Set the `TRACKING_WORKER_ID` for this instance:
+    ```bash
+    export TRACKING_WORKER_ID=1 # Set a unique ID for this instance. Change '1' for other instances if scaling.
+    ```
+    Run the container:
+    ```bash
+    docker run -d \
+      -p 80:8080 \
+      -e TRACKING_WORKER_ID=${TRACKING_WORKER_ID} \
+      --name tracking-api-container \
+      --restart always \
+      tracking-number-api
+    ```
+    * `-d`: Runs the container in detached (background) mode.
+    * `-p 80:8080`: Maps port 80 on the EC2 instance (host) to port 8080 inside the container.
+    * `-e TRACKING_WORKER_ID=${TRACKING_WORKER_ID}`: Passes the `TRACKING_WORKER_ID` environment variable into the container.
+    * `--name tracking-api-container`: Assigns a readable name to your container.
+    * `--restart always`: Ensures the container automatically restarts on host reboot or Docker daemon restart.
+    * `tracking-number-api`: The name of the Docker image you built.
+
+5.  **Verify Container Status:**
+    ```bash
+    docker ps # Lists running containers
+    docker logs tracking-api-container # View logs of running container
+    ```
+
 ## Considerations for Production
 
 -   **Database**: Switch from H2 to a production-grade database.
